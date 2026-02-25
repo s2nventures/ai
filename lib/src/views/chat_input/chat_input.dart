@@ -13,6 +13,7 @@ import '../../dialogs/adaptive_snack_bar/adaptive_snack_bar.dart';
 import '../../providers/interface/attachments.dart';
 import '../../providers/interface/chat_message.dart';
 import '../../styles/styles.dart';
+import '../llm_chat_view/llm_chat_view.dart' show AttachmentMenuItemsBuilder;
 import 'attachments_action_bar.dart';
 import 'attachments_view.dart';
 import 'input_button.dart';
@@ -39,6 +40,8 @@ class ChatInput extends StatefulWidget {
     this.onCancelMessage,
     this.onCancelStt,
     this.autofocus = true,
+    this.customAttachmentMenuItems,
+    this.enableLinkAttachment = true,
     super.key,
   }) : assert(
          !(onCancelMessage != null && onCancelStt != null),
@@ -80,6 +83,12 @@ class ChatInput extends StatefulWidget {
 
   /// Whether the input should automatically focus
   final bool autofocus;
+
+  /// Optional builder for custom menu items in the attachment action bar.
+  final AttachmentMenuItemsBuilder? customAttachmentMenuItems;
+
+  /// Whether to show the link/URL attachment option in the attachment menu.
+  final bool enableLinkAttachment;
 
   @override
   State<ChatInput> createState() => _ChatInputState();
@@ -180,6 +189,16 @@ class _ChatInputState extends State<ChatInput> {
                             padding: const EdgeInsets.only(bottom: 14),
                             child: AttachmentActionBar(
                               onAttachments: onAttachments,
+                              enableLinkAttachment: widget.enableLinkAttachment,
+                              customMenuItems:
+                                  widget.customAttachmentMenuItems != null
+                                      ? (context) =>
+                                          widget.customAttachmentMenuItems!(
+                                            context,
+                                            addAttachments: onAttachments,
+                                            insertText: onInsertText,
+                                          )
+                                      : null,
                             ),
                           ),
                         Expanded(
@@ -272,6 +291,30 @@ class _ChatInputState extends State<ChatInput> {
   void onAttachments(Iterable<Attachment> attachments) {
     assert(_viewModel!.enableAttachments);
     setState(() => _attachments.addAll(attachments));
+  }
+
+  void onInsertText(String text) {
+    final current = _textController.text;
+    final selection = _textController.selection;
+
+    // If there's a valid cursor position, insert at cursor; otherwise append.
+    if (selection.isValid && selection.isCollapsed) {
+      final before = current.substring(0, selection.baseOffset);
+      final after = current.substring(selection.baseOffset);
+      _textController.value = TextEditingValue(
+        text: "$before$text$after",
+        selection: TextSelection.collapsed(
+          offset: selection.baseOffset + text.length,
+        ),
+      );
+    } else {
+      _textController.text = current.isEmpty ? text : "$current$text";
+      _textController.selection = TextSelection.collapsed(
+        offset: _textController.text.length,
+      );
+    }
+
+    _focusNode.requestFocus();
   }
 
   void onRemoveAttachment(Attachment attachment) =>

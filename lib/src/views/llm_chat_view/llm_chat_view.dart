@@ -23,6 +23,17 @@ import '../chat_input/chat_input.dart';
 import '../response_builder.dart';
 import 'llm_response.dart';
 
+/// Builder for custom menu items in the attachment action bar.
+///
+/// Receives callbacks to [addAttachments] and [insertText] so that custom
+/// menu items can add attachments or insert text into the chat input field.
+typedef AttachmentMenuItemsBuilder =
+    List<Widget> Function(
+      BuildContext context, {
+      required void Function(Iterable<Attachment> attachments) addAttachments,
+      required void Function(String text) insertText,
+    });
+
 /// A widget that displays a chat interface for interacting with an LLM
 /// (Language Model).
 ///
@@ -79,6 +90,9 @@ class LlmChatView extends StatefulWidget {
   /// - [enableVoiceNotes]: Optional. Whether to enable voice notes in the chat input.
   /// - [strings]: Optional. Custom strings for the chat interface. If not provided,
   ///   the default strings will be used.
+  /// - [customAttachmentMenuItems]: Optional. A builder that returns additional
+  ///   menu items to display in the attachment popup menu. The builder receives
+  ///   callbacks for adding attachments and inserting text into the input field.
   LlmChatView({
     required LlmProvider provider,
     LlmChatViewStyle? style,
@@ -92,8 +106,10 @@ class LlmChatView extends StatefulWidget {
     this.cancelMessage = 'CANCEL',
     this.errorMessage = 'ERROR',
     this.enableAttachments = true,
+    this.enableLinkAttachment = true,
     this.enableVoiceNotes = true,
     this.autofocus,
+    this.customAttachmentMenuItems,
     LlmChatViewStrings? strings,
     super.key,
   }) : viewModel = ChatViewModel(
@@ -120,6 +136,12 @@ class LlmChatView extends StatefulWidget {
   /// When set to false, the attachment button and related functionality will be
   /// disabled.
   final bool enableAttachments;
+
+  /// Whether to show the link/URL attachment option in the attachment menu.
+  ///
+  /// When set to false, the URL attachment menu item will be hidden.
+  /// Defaults to true.
+  final bool enableLinkAttachment;
 
   /// Whether to enable voice notes in the chat input.
   ///
@@ -161,6 +183,14 @@ class LlmChatView extends StatefulWidget {
   /// presence of suggestions. If there are no suggestions, the input field
   /// will be focused automatically.
   final bool? autofocus;
+
+  /// Optional builder for custom menu items in the attachment action bar.
+  ///
+  /// When provided, the returned widgets are appended to the built-in
+  /// attachment menu items (camera, gallery, file, link). The builder
+  /// receives callbacks for adding attachments and inserting text into the
+  /// chat input field.
+  final AttachmentMenuItemsBuilder? customAttachmentMenuItems;
 
   @override
   State<LlmChatView> createState() => _LlmChatViewState();
@@ -239,6 +269,9 @@ class _LlmChatViewState extends State<LlmChatView>
                         onTranslateStt: _onTranslateStt,
                         onCancelStt:
                             _pendingSttResponse == null ? null : _onCancelStt,
+                        customAttachmentMenuItems:
+                            widget.customAttachmentMenuItems,
+                        enableLinkAttachment: widget.enableLinkAttachment,
                       ),
                     ),
                   ],

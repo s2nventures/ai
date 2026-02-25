@@ -177,3 +177,29 @@ final class LinkAttachment extends Attachment {
       'mimeType: $mimeType'
       ')';
 }
+
+/// Represents a plain-text attachment in a chat message.
+///
+/// This class extends [Attachment] and provides specific properties for
+/// handling text-based attachments such as notes, snippets, or other
+/// textual content that should be sent as context to the LLM.
+@immutable
+final class TextAttachment extends Attachment {
+  /// Creates a [TextAttachment] with the given name and text content.
+  ///
+  /// [name] is the display name of the attachment.
+  /// [text] is the plain-text content of the attachment.
+  const TextAttachment({required super.name, required this.text});
+
+  /// The plain-text content of the attachment.
+  final String text;
+
+  @override
+  String toString() =>
+      'TextAttachment('
+      'name: $name, '
+      // I want to avoid the trailing whitespace here for readability.
+      // ignore: missing_whitespace_between_adjacent_strings
+      'text: ${text.length} chars'
+      ')';
+}

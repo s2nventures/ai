@@ -6,28 +6,28 @@ import 'package:flutter/widgets.dart';
 
 import '../../chat_view_model/chat_view_model_client.dart';
 import '../../providers/interface/attachments.dart';
-import '../../styles/file_attachment_style.dart';
+import '../../styles/text_attachment_style.dart';
 
-/// A widget that displays a file attachment.
+/// A widget that displays a text attachment.
 ///
-/// This widget creates a container with a file icon and information about the
-/// attached file, such as its name and MIME type.
+/// This widget creates a container with a text icon and information about the
+/// attached text content, such as its name and a preview of the text.
 @immutable
-class FileAttachmentView extends StatelessWidget {
-  /// Creates a FileAttachmentView.
+class TextAttachmentView extends StatelessWidget {
+  /// Creates a TextAttachmentView.
   ///
   /// The [attachment] parameter must not be null and represents the
-  /// file attachment to be displayed.
-  const FileAttachmentView(this.attachment, {super.key});
+  /// text attachment to be displayed.
+  const TextAttachmentView(this.attachment, {super.key});
 
-  /// The file attachment to be displayed.
-  final Attachment attachment;
+  /// The text attachment to be displayed.
+  final TextAttachment attachment;
 
   @override
   Widget build(BuildContext context) => ChatViewModelClient(
     builder: (context, viewModel, child) {
-      final attachmentStyle = FileAttachmentStyle.resolve(
-        viewModel.style?.fileAttachmentStyle,
+      final attachmentStyle = TextAttachmentStyle.resolve(
+        viewModel.style?.textAttachmentStyle,
       );
 
       return Container(
@@ -53,20 +53,22 @@ class FileAttachmentView extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                    attachment.name,
-                    style: attachmentStyle.filenameStyle,
-                    overflow: TextOverflow.ellipsis,
+                  Flexible(
+                    child: Text(
+                      attachment.name,
+                      style: attachmentStyle.nameStyle,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                  Text(
-                    switch (attachment) {
-                      (final ImageFileAttachment a) => a.mimeType,
-                      (final FileAttachment a) => a.mimeType,
-                      (final LinkAttachment a) => a.mimeType,
-                      (TextAttachment _) => "text/plain",
-                    },
-                    style: attachmentStyle.filetypeStyle,
-                    overflow: TextOverflow.ellipsis,
+                  Flexible(
+                    child: Text(
+                      attachment.text.length > 50
+                          ? "${attachment.text.substring(0, 50)}..."
+                          : attachment.text,
+                      style: attachmentStyle.previewStyle,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                    ),
                   ),
                 ],
               ),

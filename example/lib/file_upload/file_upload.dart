@@ -60,6 +60,7 @@ class ChatPage extends StatelessWidget {
           mimeType: 'text/plain',
         ),
         (final LinkAttachment a) => a,
+        (final TextAttachment a) => a,
       });
     }
 

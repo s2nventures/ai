@@ -29,6 +29,10 @@ class ImagePreviewDialog extends StatelessWidget {
             'File attachments not supported in image preview dialog',
           ),
         (final LinkAttachment a) => Image.network(a.url.toString(), fit: _fit),
+        (TextAttachment _) =>
+          throw AssertionError(
+            'Text attachments not supported in image preview dialog',
+          ),
       },
     ),
   );

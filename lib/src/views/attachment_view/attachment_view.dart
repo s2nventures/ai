@@ -8,6 +8,7 @@ import 'package:flutter_ai_toolkit/src/views/attachment_view/link_attachment_vie
 import '../../providers/interface/attachments.dart';
 import 'file_attatchment_view.dart';
 import 'image_attachment_view.dart';
+import 'text_attachment_view.dart';
 
 /// A widget that displays an attachment based on its type.
 ///
@@ -31,5 +32,6 @@ class AttachmentView extends StatelessWidget {
     (final ImageFileAttachment a) => ImageAttachmentView(a),
     (final FileAttachment a) => FileAttachmentView(a),
     (final LinkAttachment a) => LinkAttachmentView(a),
+    (final TextAttachment a) => TextAttachmentView(a),
   };
 }

@@ -37,6 +37,10 @@ class ImageAttachmentView extends StatelessWidget {
             'File attachments not supported in image attachment view',
           ),
         (final LinkAttachment a) => Image.network(a.url.toString()),
+        (TextAttachment _) =>
+          throw AssertionError(
+            'Text attachments not supported in image attachment view',
+          ),
       },
     ),
   );

@@ -55,6 +55,10 @@ class ChatMessage {
             name: attachment['name'] as String,
             url: Uri.parse(attachment['data'] as String),
           ),
+          'text' => TextAttachment(
+            name: attachment['name'] as String,
+            text: attachment['data'] as String,
+          ),
           _ => throw UnimplementedError(),
         },
     ],
@@ -119,15 +123,18 @@ class ChatMessage {
           'type': switch (attachment) {
             (FileAttachment _) => 'file',
             (LinkAttachment _) => 'link',
+            (TextAttachment _) => 'text',
           },
           'name': attachment.name,
           'mimeType': switch (attachment) {
             (final FileAttachment a) => a.mimeType,
             (final LinkAttachment a) => a.mimeType,
+            (TextAttachment _) => 'text/plain',
           },
           'data': switch (attachment) {
             (final FileAttachment a) => base64Encode(a.bytes),
             (final LinkAttachment a) => a.url,
+            (final TextAttachment a) => a.text,
           },
         },
     ],

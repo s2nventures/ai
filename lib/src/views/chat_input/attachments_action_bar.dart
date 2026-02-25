@@ -27,12 +27,23 @@ class AttachmentActionBar extends StatefulWidget {
   ///
   /// The [onAttachments] parameter is required and is called when attachments
   /// are selected.
-  const AttachmentActionBar({required this.onAttachments, super.key});
+  const AttachmentActionBar({
+    required this.onAttachments,
+    this.customMenuItems,
+    this.enableLinkAttachment = true,
+    super.key,
+  });
 
   /// Callback function that is called when attachments are selected.
   ///
   /// The selected [Attachment]s are passed as an argument to this function.
   final Function(Iterable<Attachment> attachments) onAttachments;
+
+  /// Optional builder for custom menu items appended after the built-in items.
+  final List<Widget> Function(BuildContext context)? customMenuItems;
+
+  /// Whether to show the link/URL attachment option in the menu.
+  final bool enableLinkAttachment;
 
   @override
   State<AttachmentActionBar> createState() => _AttachmentActionBarState();
@@ -87,17 +98,19 @@ class _AttachmentActionBarState extends State<AttachmentActionBar> {
             style: chatStyle.attachFileButtonStyle!.textStyle,
           ),
         ),
-        MenuItemButton(
-          leadingIcon: Icon(
-            Icons.link,
-            color: chatStyle.urlButtonStyle!.iconColor,
+        if (widget.enableLinkAttachment)
+          MenuItemButton(
+            leadingIcon: Icon(
+              Icons.link,
+              color: chatStyle.urlButtonStyle!.iconColor,
+            ),
+            onPressed: () => _onUrl(chatStrings),
+            child: Text(
+              chatStyle.urlButtonStyle!.text!,
+              style: chatStyle.urlButtonStyle!.textStyle,
+            ),
           ),
-          onPressed: () => _onUrl(chatStrings),
-          child: Text(
-            chatStyle.urlButtonStyle!.text!,
-            style: chatStyle.urlButtonStyle!.textStyle,
-          ),
-        ),
+        if (widget.customMenuItems != null) ...widget.customMenuItems!(context),
       ];
 
       return MenuAnchor(

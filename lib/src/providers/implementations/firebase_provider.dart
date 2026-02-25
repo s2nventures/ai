@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:convert' show utf8;
+
 import 'package:firebase_ai/firebase_ai.dart';
 import 'package:flutter/foundation.dart';
 
@@ -170,6 +172,10 @@ class FirebaseProvider extends LlmProvider with ChangeNotifier {
   static Part _partFrom(Attachment attachment) => switch (attachment) {
     (final FileAttachment a) => InlineDataPart(a.mimeType, a.bytes),
     (final LinkAttachment a) => TextPart(a.url.toString()),
+    (final TextAttachment a) => InlineDataPart(
+      'text/plain',
+      utf8.encode(a.text),
+    ),
   };
 
   static Content _contentFrom(ChatMessage message) => Content(

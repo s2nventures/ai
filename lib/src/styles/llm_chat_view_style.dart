@@ -10,6 +10,7 @@ import 'action_button_type.dart';
 import 'chat_input_style.dart';
 import 'file_attachment_style.dart';
 import 'llm_message_style.dart';
+import 'text_attachment_style.dart';
 import 'suggestion_style.dart';
 import 'toolkit_colors.dart';
 import 'user_message_style.dart';
@@ -41,6 +42,7 @@ class LlmChatViewStyle {
     this.closeMenuButtonStyle,
     this.actionButtonBarDecoration,
     this.fileAttachmentStyle,
+    this.textAttachmentStyle,
     this.suggestionStyle,
     this.voiceNoteRecorderStyle,
     this.urlButtonStyle,
@@ -175,6 +177,14 @@ class LlmChatViewStyle {
       actionButtonBarDecoration:
           style?.actionButtonBarDecoration ??
           defaultStyle.actionButtonBarDecoration,
+      fileAttachmentStyle: FileAttachmentStyle.resolve(
+        style?.fileAttachmentStyle,
+        defaultStyle: defaultStyle.fileAttachmentStyle,
+      ),
+      textAttachmentStyle: TextAttachmentStyle.resolve(
+        style?.textAttachmentStyle,
+        defaultStyle: defaultStyle.textAttachmentStyle,
+      ),
       suggestionStyle: SuggestionStyle.resolve(
         style?.suggestionStyle,
         defaultStyle: defaultStyle.suggestionStyle,
@@ -259,6 +269,7 @@ class LlmChatViewStyle {
       borderRadius: BorderRadius.circular(20),
     ),
     fileAttachmentStyle: FileAttachmentStyle.defaultStyle(),
+    textAttachmentStyle: TextAttachmentStyle.defaultStyle(),
     suggestionStyle: SuggestionStyle.defaultStyle(),
     voiceNoteRecorderStyle: VoiceNoteRecorderStyle.defaultStyle(),
     urlButtonStyle: ActionButtonStyle.defaultStyle(
@@ -290,6 +301,7 @@ class LlmChatViewStyle {
     ActionButtonStyle? closeMenuButtonStyle,
     Decoration? actionButtonBarDecoration,
     FileAttachmentStyle? fileAttachmentStyle,
+    TextAttachmentStyle? textAttachmentStyle,
     SuggestionStyle? suggestionStyle,
     VoiceNoteRecorderStyle? voiceNoteRecorderStyle,
     ActionButtonStyle? urlButtonStyle,
@@ -322,6 +334,7 @@ class LlmChatViewStyle {
       actionButtonBarDecoration:
           actionButtonBarDecoration ?? this.actionButtonBarDecoration,
       fileAttachmentStyle: fileAttachmentStyle ?? this.fileAttachmentStyle,
+      textAttachmentStyle: textAttachmentStyle ?? this.textAttachmentStyle,
       suggestionStyle: suggestionStyle ?? this.suggestionStyle,
       voiceNoteRecorderStyle:
           voiceNoteRecorderStyle ?? this.voiceNoteRecorderStyle,
@@ -394,6 +407,9 @@ class LlmChatViewStyle {
 
   /// Style for file attachments.
   final FileAttachmentStyle? fileAttachmentStyle;
+
+  /// Style for text attachments.
+  final TextAttachmentStyle? textAttachmentStyle;
 
   /// Style for suggestions.
   final SuggestionStyle? suggestionStyle;
