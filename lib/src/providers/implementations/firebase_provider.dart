@@ -29,6 +29,11 @@ class FirebaseProvider extends LlmProvider with ChangeNotifier {
   ///
   /// [chatGenerationConfig] is an optional configuration for controlling the
   /// model's generation behavior.
+  ///
+  /// [maxHistoryTurns] optionally limits how many recent user turns are sent
+  /// in full to the API. Older turns are compacted into a text-only summary
+  /// (dropping image/file bytes) to reduce token usage. The display history
+  /// is preserved intact. A value of 0 or null disables compaction.
   FirebaseProvider({
     required GenerativeModel model,
     void Function(Iterable<FunctionCall>)? onFunctionCalls,
@@ -36,12 +41,15 @@ class FirebaseProvider extends LlmProvider with ChangeNotifier {
     List<SafetySetting>? chatSafetySettings,
     GenerationConfig? chatGenerationConfig,
     Future<Map<String, Object?>?> Function(FunctionCall)? onFunctionCall,
+    int? maxHistoryTurns,
   }) : _model = model,
        _history = history?.toList() ?? [],
        _chatSafetySettings = chatSafetySettings,
        _chatGenerationConfig = chatGenerationConfig,
-       _onFunctionCall = onFunctionCall {
-    _chat = _startChat(history);
+       _onFunctionCall = onFunctionCall,
+       _maxHistoryTurns = (maxHistoryTurns ?? 0) > 0 ? maxHistoryTurns : null {
+    _chat = _startChat(_history);
+    _compactChatSessionIfNeeded();
   }
 
   final GenerativeModel _model;
@@ -49,6 +57,7 @@ class FirebaseProvider extends LlmProvider with ChangeNotifier {
   final GenerationConfig? _chatGenerationConfig;
   final List<ChatMessage> _history;
   final Future<Map<String, Object?>?> Function(FunctionCall)? _onFunctionCall;
+  final int? _maxHistoryTurns;
   ChatSession? _chat;
 
   @override
@@ -89,6 +98,11 @@ class FirebaseProvider extends LlmProvider with ChangeNotifier {
       llmMessage.append(chunk);
       return chunk;
     });
+
+    // Compact the API chat session if history exceeds the turn limit.
+    // The display history (_history) is preserved intact; only the
+    // ChatSession is rebuilt with a compacted version to reduce API tokens.
+    _compactChatSessionIfNeeded();
 
     // notify listeners that the history has changed when response is complete
     notifyListeners();
@@ -160,7 +174,94 @@ class FirebaseProvider extends LlmProvider with ChangeNotifier {
     _history.clear();
     _history.addAll(history);
     _chat = _startChat(history);
+    _compactChatSessionIfNeeded();
     notifyListeners();
+  }
+
+  /// Rebuilds the [ChatSession] with a compacted history if the number of
+  /// user turns exceeds [_maxHistoryTurns].
+  ///
+  /// Older turns are converted to a concise text-only summary (dropping
+  /// binary attachments like images), while the most recent turns are kept
+  /// in full with their original attachments. This bounds the per-request
+  /// input token count to roughly O([_maxHistoryTurns]) instead of O(N).
+  void _compactChatSessionIfNeeded() {
+    final limit = _maxHistoryTurns;
+
+    if (limit == null) {
+      return;
+    }
+
+    final userTurns = _history.where((m) => m.origin.isUser).length;
+
+    if (userTurns <= limit) {
+      return;
+    }
+
+    // Walk backward to find the split point that keeps the last `limit`
+    // user turns (plus their paired LLM responses).
+    var kept = 0;
+    var splitIndex = 0;
+
+    for (var i = _history.length - 1; i >= 0; i--) {
+      if (_history[i].origin.isUser) {
+        kept++;
+
+        if (kept >= limit) {
+          splitIndex = i;
+          break;
+        }
+      }
+    }
+
+    if (splitIndex <= 0) {
+      return;
+    }
+
+    final older = _history.sublist(0, splitIndex);
+    final recent = _history.sublist(splitIndex);
+
+    // Build a concise text-only recap of older messages, capped in length.
+    final recap = StringBuffer()
+      ..writeln(
+        "[Earlier conversation summary \u2014 "
+        "${older.length} messages compacted]",
+      );
+
+    var recapLength = 0;
+    const maxRecapChars = 4000;
+
+    for (final msg in older) {
+      if (recapLength >= maxRecapChars) {
+        recap.writeln("...(earlier messages omitted)");
+        break;
+      }
+
+      final role = msg.origin.isUser ? "User" : "Assistant";
+      final text = msg.text?.trim();
+
+      if (text != null && text.isNotEmpty) {
+        final truncated =
+            text.length > 200 ? "${text.substring(0, 200)}..." : text;
+        final line = "$role: $truncated";
+        recap.writeln(line);
+        recapLength += line.length;
+      }
+    }
+
+    final compactedContents = <Content>[
+      // Inject the recap as a synthetic model message so the LLM retains
+      // context from the earlier conversation.
+      Content("model", [TextPart(recap.toString())]),
+      // Recent turns in full (including attachments).
+      ...recent.map(_contentFrom),
+    ];
+
+    _chat = _model.startChat(
+      history: compactedContents,
+      safetySettings: _chatSafetySettings,
+      generationConfig: _chatGenerationConfig,
+    );
   }
 
   ChatSession? _startChat(Iterable<ChatMessage>? history) => _model.startChat(
