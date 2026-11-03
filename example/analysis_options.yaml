@@ -2,3 +2,10 @@ include: package:flutter_lints/flutter.yaml
 
 dart_format:
   line_length: 80
+analyzer:
+  exclude:
+    - build/**
+    - android/**
+    - ios/**
+    - web/**
+    - macos/**

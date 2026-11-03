@@ -6,3 +6,6 @@ linter:
 
 dart_format:
   line_length: 80
+analyzer:
+  exclude:
+    - build/**

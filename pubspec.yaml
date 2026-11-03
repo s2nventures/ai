@@ -11,25 +11,36 @@ topics:
   - gemini
 
 environment:
-  sdk: ^3.7.0
-  flutter: '>=3.27.0'
+  sdk: ^3.11.0
+  flutter: '>=3.41.0'
 
 dependencies:
+  # Pinned below 0.4.0 by waveform_recorder (`cross_file: ^0.3.4+2`).
   cross_file: ^0.3.5+2
   file_selector: ^1.1.0
-  firebase_ai: ^3.12.2
+  # The toolkit only uses the stable chat surface (GenerativeModel,
+  # ChatSession, Content/Part, FunctionCall/FunctionResponse, SafetySetting,
+  # GenerationConfig), which is unchanged across 3.x -> 5.x. The 4.0.0 /
+  # 5.0.0 majors only removed the deprecated Imagen and `vertexAI()` APIs, so
+  # the range spans both to let consumers move `firebase_core` 4.x -> 5.x
+  # independently of this package.
+  firebase_ai: '>=3.12.2 <6.0.0'
   flutter:
     sdk: flutter
   flutter_context_menu: ^0.4.2
-  flutter_markdown_plus: ^1.0.7
+  flutter_markdown_plus: ^1.0.12
   flutter_picture_taker: ^0.2.0
-  google_fonts: ^8.1.0
-  image_picker: ^1.2.2
-  mime: ^2.0.0
+  # Pinned below 9.0.0: google_fonts 9.x depends on the standalone
+  # `material_ui` package, which the consuming app deliberately does not
+  # adopt yet (its `Theme`/`TextTheme` types differ from
+  # `package:flutter/material.dart`). Lift once the app migrates.
+  google_fonts: '>=8.2.1 <9.0.0'
+  image_picker: ^1.2.4
+  mime: ^2.1.0
   universal_platform: ^1.1.0
-  url_launcher: ^6.3.2
-  uuid: ^4.5.3
-  waveform_recorder: ^1.8.0
+  url_launcher: ^6.3.3
+  uuid: ^4.6.0
+  waveform_recorder: ^1.8.1
 
 dev_dependencies:
   flutter_lints: ^6.0.0

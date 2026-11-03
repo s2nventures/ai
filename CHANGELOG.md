@@ -1,4 +1,21 @@
-## 1.0.0
+## 1.0.0 (s2nventures fork)
+
+- Merged upstream `flutter/ai` `main` (dependency refresh, IDX removal, CI
+  action bumps).
+
+- Widened `firebase_ai` to `>=3.12.2 <6.0.0` so consumers can move from
+  `firebase_core` 4.x to 5.x independently. The toolkit only uses the stable
+  chat surface, which is unchanged across the 4.0.0 (Imagen removal) and
+  5.0.0 (deprecated-API removal) majors. The example app and README now use
+  `FirebaseAI.agentPlatform()`, the 5.x replacement for `vertexAI()`.
+
+- Bumped the remaining dependencies to their latest compatible versions
+  (`flutter_markdown_plus` 1.0.12, `image_picker` 1.2.4, `url_launcher`
+  6.3.3, `uuid` 4.6.0, `mime` 2.1.0, `waveform_recorder` 1.8.1,
+  `google_fonts` 8.2.1). `cross_file` stays on 0.3.x (required by
+  `waveform_recorder`) and `google_fonts` stays below 9.0.0 (9.x depends on
+  `material_ui`). Minimum SDK is now Dart 3.11 / Flutter 3.41, as required by
+  `image_picker` and `url_launcher`.
 
 - Merged [Enable customisable styling for WaveformRecorder via
   VoiceNoteRecorderStyle](https://github.com/flutter/ai/pull/161), which adds

@@ -33,7 +33,9 @@ class ChatPage extends StatelessWidget {
     appBar: AppBar(title: const Text(App.title)),
     body: LlmChatView(
       provider: FirebaseProvider(
-        model: FirebaseAI.vertexAI().generativeModel(model: 'gemini-2.0-flash'),
+        model: FirebaseAI.agentPlatform().generativeModel(
+          model: 'gemini-2.0-flash',
+        ),
       ),
     ),
   );
